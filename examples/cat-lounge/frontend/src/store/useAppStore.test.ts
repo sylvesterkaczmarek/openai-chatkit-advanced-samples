@@ -122,3 +122,23 @@ it("preserves untagged partial updates to the selected cat", () => {
   state().applyCatUpdate({ energy: 9 });
   expect(state().cat).toMatchObject({ threadId: "first", name: "Current", energy: 9 });
 });
+
+
+it("does not celebrate an unnamed cat after a partial state update", () => {
+  state().applyCatUpdate({ energy: 9 });
+  expect(state().cat).toMatchObject({ name: "Unnamed Cat", energy: 9 });
+  expect(confetti).not.toHaveBeenCalled();
+});
+
+it("rejects an explicit null-thread update while a thread is selected", () => {
+  state().applyCatUpdate({ threadId: null, name: "Obsolete default" });
+  expect(state().cat.name).toBe("Unnamed Cat");
+  expect(confetti).not.toHaveBeenCalled();
+});
+
+
+it("accepts a matching null-thread update after clearing the selection", () => {
+  state().setThreadId(null);
+  state().applyCatUpdate({ threadId: null, name: "Default cat" });
+  expect(state().cat).toMatchObject({ threadId: null, name: "Default cat" });
+});

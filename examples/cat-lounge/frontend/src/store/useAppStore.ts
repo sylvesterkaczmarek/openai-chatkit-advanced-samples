@@ -101,10 +101,10 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     cat: DEFAULT_CAT_STATE,
     applyCatUpdate: (update) => {
-      if (update.threadId != null && update.threadId !== get().threadId) return;
+      if (update.threadId !== undefined && update.threadId !== get().threadId) return;
       refreshVersion += 1;
       const prev = get().cat
-      if (prev.name === "Unnamed Cat" && update.name !== prev.name) {
+      if (prev.name === "Unnamed Cat" && update.name !== undefined && update.name !== prev.name) {
         celebrateReveal();
       }
 
