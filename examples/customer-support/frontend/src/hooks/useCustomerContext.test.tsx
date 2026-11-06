@@ -134,3 +134,21 @@ describe("customer profile request ownership", () => {
     expect(current.profile?.name).toBe("default customer");
   });
 });
+
+
+it.each(["new-thread", null])("ignores a retained refresh callback from an obsolete thread, next=%s", async (nextThread) => {
+  await render("old-thread");
+  const obsoleteRefresh = current.refresh;
+  await render(nextThread);
+  const before = requests.length;
+  let stale!: Promise<void>;
+  await act(async () => { stale = obsoleteRefresh(); });
+  // Settle an accidentally started request so a regression cannot hang the test.
+  if (requests.length > before) await succeed(before, "obsolete callback");
+  await stale;
+  await succeed(1, "current customer");
+  await succeed(0, "old request");
+  expect(requests).toHaveLength(before);
+  expect(current.profile?.name).toBe("current customer");
+  expect(current.error).toBeNull();
+});

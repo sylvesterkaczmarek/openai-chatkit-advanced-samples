@@ -59,8 +59,10 @@ export function useCustomerContext(threadId: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   const requestVersion = useRef(0);
+  const activeThread = useRef<string | null | undefined>(undefined);
 
   const fetchProfile = useCallback(async () => {
+    if (activeThread.current !== threadId) return;
     const version = ++requestVersion.current;
     setLoading(true);
     setError(null);
@@ -87,11 +89,13 @@ export function useCustomerContext(threadId: string | null) {
   }, [threadId]);
 
   useEffect(() => {
+    activeThread.current = threadId;
     void fetchProfile();
     return () => {
+      activeThread.current = undefined;
       requestVersion.current++;
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, threadId]);
 
   const applyProfileUpdate = useCallback((nextProfile: CustomerProfile) => {
     // A direct update supersedes any profile snapshot already being fetched.
