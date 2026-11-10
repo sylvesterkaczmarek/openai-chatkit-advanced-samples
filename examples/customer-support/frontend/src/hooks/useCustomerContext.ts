@@ -98,12 +98,14 @@ export function useCustomerContext(threadId: string | null) {
   }, [fetchProfile, threadId]);
 
   const applyProfileUpdate = useCallback((nextProfile: CustomerProfile) => {
+    // A retained callback from a different thread must not supersede its request.
+    if (activeThread.current !== threadId) return;
     // A direct update supersedes any profile snapshot already being fetched.
     requestVersion.current++;
     setProfile(nextProfile);
     setLoading(false);
     setError(null);
-  }, []);
+  }, [threadId]);
 
   return {
     profile,

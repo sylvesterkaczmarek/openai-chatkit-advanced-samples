@@ -136,6 +136,25 @@ describe("customer profile request ownership", () => {
 });
 
 
+it.each(["new-thread", null])("ignores a retained profile update from an obsolete thread, next=%s", async (nextThread) => {
+  await render("old-thread");
+  const obsoleteSetProfile = current.setProfile;
+  await render(nextThread);
+
+  expect(current.loading).toBe(true);
+  await act(async () => obsoleteSetProfile(profile("obsolete profile")));
+  // The old callback must not clear the current fetch or invalidate its request generation.
+  expect(current.loading).toBe(true);
+  expect(current.profile).toBeNull();
+  expect(current.error).toBeNull();
+
+  await succeed(1, "current customer");
+  await succeed(0, "old customer");
+  expect(current.profile?.name).toBe("current customer");
+  expect(current.error).toBeNull();
+  expect(current.loading).toBe(false);
+});
+
 it.each(["new-thread", null])("ignores a retained refresh callback from an obsolete thread, next=%s", async (nextThread) => {
   await render("old-thread");
   const obsoleteRefresh = current.refresh;
